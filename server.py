@@ -1,14 +1,19 @@
-import yaml
+import dotenv
+
+import os
 import asyncio
 from fastapi import FastAPI, Response
 from agent import Agent, AgentTask
 import uvicorn
 
-with open('config.yaml', 'r') as f:
-    config = yaml.safe_load(f)
-
 app = FastAPI()
 agent = Agent()
+
+
+def get_config(key, default_value=None):
+    if not key.startswith('OFL_'):
+        key = 'OFL_' + key
+    return os.getenv(key.upper(), default_value)
 
 
 @app.get("/{task_description:path}")
@@ -38,7 +43,7 @@ async def add_task_route(task_description: str):
 if __name__ == "__main__":
     uvicorn.run(
         app,
-        host=config.get('host', '0.0.0.0'),
-        port=config.get('port', 5000),
+        host=get_config('server_host', '0.0.0.0'),
+        port=int(get_config('server_port', '5000')),
         # reload=True # Optional: Enable for development
     )
